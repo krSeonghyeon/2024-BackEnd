@@ -34,6 +34,17 @@ public class ArticleRepositoryMemory implements ArticleRepository {
     }
 
     @Override
+    public List<Article> findAllByMemberId(Long memberId) {
+        return articles.entrySet().stream()
+            .filter(it -> it.getValue().getAuthorId().equals(memberId))
+            .map(it -> {
+                Article article = it.getValue();
+                article.setId(it.getKey());
+                return article;
+            }).toList();
+    }
+
+    @Override
     public Article findById(Long id) {
         return articles.getOrDefault(id, null);
     }
