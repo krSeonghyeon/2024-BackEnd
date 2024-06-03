@@ -2,6 +2,7 @@ package com.example.demo.service;
 
 import java.util.List;
 
+import com.example.demo.exception.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,8 +36,11 @@ public class ArticleService {
 
     public ArticleResponse getById(Long id) {
         Article article = articleRepository.findById(id);
+        if (article == null) throw new CustomException(PostExceptionType.NOT_FOUND_POST);
+
         Member member = memberRepository.findById(article.getAuthorId());
         Board board = boardRepository.findById(article.getBoardId());
+
         return ArticleResponse.of(article, member, board);
     }
 
@@ -53,25 +57,49 @@ public class ArticleService {
 
     @Transactional
     public ArticleResponse create(ArticleCreateRequest request) {
+        if (!isValid(request))  throw new CustomException(CommonExceptionType.BAD_REQUEST_NULL_VALUE);
+
+        Member existedMember = memberRepository.findById(request.authorId());
+        if (existedMember == null) throw new CustomException(PostExceptionType.INVALID_MEMBER_REFERENCE);
+
+        Board existedBoard = boardRepository.findById(request.boardId());
+        if (existedBoard == null) throw new CustomException(PostExceptionType.INVALID_BOARD_REFERENCE);
+
         Article article = new Article(
             request.authorId(),
             request.boardId(),
             request.title(),
             request.description()
         );
+
         Article saved = articleRepository.insert(article);
         Member member = memberRepository.findById(saved.getAuthorId());
         Board board = boardRepository.findById(saved.getBoardId());
+
         return ArticleResponse.of(saved, member, board);
+    }
+
+    private boolean isValid(ArticleCreateRequest request) {
+        return request.authorId() != null
+                && request.boardId() != null
+                && request.title() != null
+                && request.description() != null;
     }
 
     @Transactional
     public ArticleResponse update(Long id, ArticleUpdateRequest request) {
         Article article = articleRepository.findById(id);
+        if (article == null) throw new CustomException(PostExceptionType.NOT_FOUND_POST);
+
+        Board existedBoard = boardRepository.findById(request.boardId());
+        if (existedBoard == null)  throw new CustomException(PostExceptionType.INVALID_BOARD_REFERENCE);
+
         article.update(request.boardId(), request.title(), request.description());
+
         Article updated = articleRepository.update(article);
         Member member = memberRepository.findById(updated.getAuthorId());
         Board board = boardRepository.findById(article.getBoardId());
+
         return ArticleResponse.of(article, member, board);
     }
 
