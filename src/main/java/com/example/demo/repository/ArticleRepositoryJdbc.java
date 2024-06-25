@@ -12,7 +12,6 @@ import org.springframework.stereotype.Repository;
 
 import com.example.demo.domain.Article;
 
-@Repository
 public class ArticleRepositoryJdbc implements ArticleRepository {
 
     private final JdbcTemplate jdbcTemplate;

@@ -25,7 +25,7 @@ public class MemberService {
 
     public MemberService(MemberRepositoryJdbc memberRepository, ArticleRepository articleRepository) {
         this.memberRepository = memberRepository;
-        this.articleRepository =articleRepository;
+        this.articleRepository = articleRepository;
     }
 
     public MemberResponse getById(Long id) {

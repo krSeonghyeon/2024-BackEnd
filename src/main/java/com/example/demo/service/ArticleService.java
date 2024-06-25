@@ -16,6 +16,8 @@ import com.example.demo.repository.ArticleRepository;
 import com.example.demo.repository.BoardRepository;
 import com.example.demo.repository.MemberRepository;
 
+import static com.example.demo.exception.PostExceptionType.*;
+
 @Service
 @Transactional(readOnly = true)
 public class ArticleService {
@@ -36,7 +38,7 @@ public class ArticleService {
 
     public ArticleResponse getById(Long id) {
         Article article = articleRepository.findById(id);
-        if (article == null) throw new CustomException(PostExceptionType.NOT_FOUND_POST);
+        if (article == null) throw new CustomException(NOT_FOUND_POST);
 
         Member member = memberRepository.findById(article.getAuthorId());
         Board board = boardRepository.findById(article.getBoardId());
@@ -60,10 +62,10 @@ public class ArticleService {
         if (!isValid(request))  throw new CustomException(CommonExceptionType.BAD_REQUEST_NULL_VALUE);
 
         Member existedMember = memberRepository.findById(request.authorId());
-        if (existedMember == null) throw new CustomException(PostExceptionType.INVALID_MEMBER_REFERENCE);
+        if (existedMember == null) throw new CustomException(INVALID_MEMBER_REFERENCE);
 
         Board existedBoard = boardRepository.findById(request.boardId());
-        if (existedBoard == null) throw new CustomException(PostExceptionType.INVALID_BOARD_REFERENCE);
+        if (existedBoard == null) throw new CustomException(INVALID_BOARD_REFERENCE);
 
         Article article = new Article(
             request.authorId(),
@@ -89,10 +91,10 @@ public class ArticleService {
     @Transactional
     public ArticleResponse update(Long id, ArticleUpdateRequest request) {
         Article article = articleRepository.findById(id);
-        if (article == null) throw new CustomException(PostExceptionType.NOT_FOUND_POST);
+        if (article == null) throw new CustomException(NOT_FOUND_POST);
 
         Board existedBoard = boardRepository.findById(request.boardId());
-        if (existedBoard == null)  throw new CustomException(PostExceptionType.INVALID_BOARD_REFERENCE);
+        if (existedBoard == null)  throw new CustomException(INVALID_BOARD_REFERENCE);
 
         article.update(request.boardId(), request.title(), request.description());
 
@@ -100,7 +102,7 @@ public class ArticleService {
         Member member = memberRepository.findById(updated.getAuthorId());
         Board board = boardRepository.findById(article.getBoardId());
 
-        return ArticleResponse.of(article, member, board);
+        return ArticleResponse.of(updated, member, board);
     }
 
     @Transactional
