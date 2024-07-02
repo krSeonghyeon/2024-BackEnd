@@ -3,11 +3,9 @@ package com.example.demo.repository;
 import com.example.demo.domain.Member;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
-import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
-@Repository
 public class MemberRepositoryJpa implements MemberRepositoryJdbc{
 
     private final EntityManager entityManager;

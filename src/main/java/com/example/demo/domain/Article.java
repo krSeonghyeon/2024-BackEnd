@@ -13,11 +13,13 @@ public class Article {
     @Column(name = "id")
     private Long id;
 
-    @Column(name = "author_id", nullable = false)
-    private Long authorId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "author_id", nullable = false)
+    private Member author;
 
-    @Column(name = "board_id", nullable = false)
-    private Long boardId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "board_id", nullable = false)
+    private Board board;
 
     @Column(name = "title", nullable = false)
     private String title;
@@ -34,34 +36,34 @@ public class Article {
 
     public Article(
         Long id,
-        Long authorId,
-        Long boardId,
+        Member author,
+        Board board,
         String title,
         String content,
         LocalDateTime createdAt,
         LocalDateTime modifiedAt
     ) {
         this.id = id;
-        this.authorId = authorId;
-        this.boardId = boardId;
+        this.author = author;
+        this.board = board;
         this.title = title;
         this.content = content;
         this.createdAt = createdAt;
         this.modifiedAt = modifiedAt;
     }
 
-    public Article(Long authorId, Long boardId, String title, String content) {
+    public Article(Member author, Board board, String title, String content) {
         this.id = null;
-        this.authorId = authorId;
-        this.boardId = boardId;
+        this.author = author;
+        this.board = board;
         this.title = title;
         this.content = content;
     }
 
     protected Article() {}
 
-    public void update(Long boardId, String title, String description) {
-        this.boardId = boardId;
+    public void update(Board board, String title, String description) {
+        this.board = board;
         this.title = title;
         this.content = description;
     }
@@ -74,12 +76,20 @@ public class Article {
         return id;
     }
 
+    public Member getAuthor() {
+        return author;
+    }
+
     public Long getAuthorId() {
-        return authorId;
+        return author.getId();
+    }
+
+    public Board getBoard() {
+        return board;
     }
 
     public Long getBoardId() {
-        return boardId;
+        return board.getId();
     }
 
     public String getTitle() {

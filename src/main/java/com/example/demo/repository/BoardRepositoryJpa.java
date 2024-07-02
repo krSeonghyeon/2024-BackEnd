@@ -2,11 +2,9 @@ package com.example.demo.repository;
 
 import com.example.demo.domain.Board;
 import jakarta.persistence.EntityManager;
-import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
-@Repository
 public class BoardRepositoryJpa implements BoardRepository {
 
     private final EntityManager entityManager;

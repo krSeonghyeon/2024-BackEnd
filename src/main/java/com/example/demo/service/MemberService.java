@@ -1,13 +1,14 @@
 package com.example.demo.service;
 
 import java.util.List;
+import java.util.Optional;
 
 import com.example.demo.domain.Article;
 import com.example.demo.exception.CommonExceptionType;
 import com.example.demo.exception.CustomException;
 import com.example.demo.exception.MemberExceptionType;
-import com.example.demo.repository.ArticleRepository;
-import com.example.demo.repository.MemberRepositoryJdbc;
+import com.example.demo.repository.ArticleRepositorySpringDataJpa;
+import com.example.demo.repository.MemberRepositorySpringDataJpa;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,17 +21,17 @@ import com.example.demo.domain.Member;
 @Transactional(readOnly = true)
 public class MemberService {
 
-    private final MemberRepositoryJdbc memberRepository;
-    private final ArticleRepository articleRepository;
+    private final MemberRepositorySpringDataJpa memberRepository;
+    private final ArticleRepositorySpringDataJpa articleRepository;
 
-    public MemberService(MemberRepositoryJdbc memberRepository, ArticleRepository articleRepository) {
+    public MemberService(MemberRepositorySpringDataJpa memberRepository, ArticleRepositorySpringDataJpa articleRepository) {
         this.memberRepository = memberRepository;
         this.articleRepository = articleRepository;
     }
 
     public MemberResponse getById(Long id) {
-        Member member = memberRepository.findById(id);
-        if (member == null) throw new CustomException(MemberExceptionType.NOT_FOUND_MEMBER);
+        Member member = memberRepository.findById(id)
+                .orElseThrow(() -> new CustomException(MemberExceptionType.NOT_FOUND_MEMBER));
 
         return MemberResponse.from(member);
     }
@@ -46,7 +47,7 @@ public class MemberService {
     public MemberResponse create(MemberCreateRequest request) {
         if (!isValid(request))   throw new CustomException(CommonExceptionType.BAD_REQUEST_NULL_VALUE);
 
-        Member member = memberRepository.insert(
+        Member member = memberRepository.save(
             new Member(request.name(), request.email(), request.password())
         );
         return MemberResponse.from(member);
@@ -60,7 +61,7 @@ public class MemberService {
 
     @Transactional
     public void delete(Long id) {
-        List<Article> articles = articleRepository.findAllByMemberId(id);
+        List<Article> articles = articleRepository.findAllByAuthor_Id(id);
         if (!articles.isEmpty()) throw new CustomException(MemberExceptionType.MEMBER_HAS_POSTS);
 
         memberRepository.deleteById(id);
@@ -68,14 +69,15 @@ public class MemberService {
 
     @Transactional
     public MemberResponse update(Long id, MemberUpdateRequest request) {
-        Member member = memberRepository.findById(id);
-        if (member == null) throw new CustomException(MemberExceptionType.NOT_FOUND_MEMBER);
+        Member member = memberRepository.findById(id)
+                .orElseThrow(() -> new CustomException(MemberExceptionType.NOT_FOUND_MEMBER));
 
-        Member DuplicatedMember = memberRepository.findByEmail(request.email());
-        if (DuplicatedMember != null)   throw new CustomException(MemberExceptionType.DUPLICATED_EMAIL);
+        Optional<Member> DuplicatedMember = memberRepository.findByEmail(request.email());
+
+        if (DuplicatedMember.isPresent())   throw new CustomException(MemberExceptionType.DUPLICATED_EMAIL);
 
         member.update(request.name(), request.email());
-        memberRepository.update(member);
+        memberRepository.save(member);
         return MemberResponse.from(member);
     }
 }

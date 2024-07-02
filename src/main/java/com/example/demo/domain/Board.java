@@ -2,6 +2,8 @@ package com.example.demo.domain;
 
 import jakarta.persistence.*;
 
+import java.util.List;
+
 @Entity
 @Table(name = "board", uniqueConstraints = {
         @UniqueConstraint(columnNames = "name", name = "UK_BOARD_NAME")
@@ -15,6 +17,9 @@ public class Board {
 
     @Column(name = "name", nullable = false, length = 100)
     private String name;
+
+    @OneToMany(mappedBy = "board", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<Article> articles;
 
     protected Board() {}
 

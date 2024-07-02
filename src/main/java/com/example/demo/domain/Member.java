@@ -2,6 +2,8 @@ package com.example.demo.domain;
 
 import jakarta.persistence.*;
 
+import java.util.List;
+
 @Entity
 @Table(name = "member", uniqueConstraints = {
         @UniqueConstraint(columnNames = "email", name = "UK_MEMBER_EMAIL")
@@ -21,6 +23,9 @@ public class Member {
 
     @Column(name = "password", nullable = false)
     private String password;
+
+    @OneToMany(mappedBy = "author", fetch = FetchType.LAZY)
+    private List<Article> articles;
 
     public Member(Long id, String name, String email, String password) {
         this.id = id;

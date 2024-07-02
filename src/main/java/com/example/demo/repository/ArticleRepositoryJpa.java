@@ -2,11 +2,9 @@ package com.example.demo.repository;
 
 import com.example.demo.domain.Article;
 import jakarta.persistence.EntityManager;
-import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
-@Repository
 public class ArticleRepositoryJpa implements ArticleRepository {
 
     private final EntityManager entityManager;
@@ -32,7 +30,6 @@ public class ArticleRepositoryJpa implements ArticleRepository {
         return entityManager.createQuery("SELECT a FROM Article a WHERE a.authorId = :memberId", Article.class)
                 .setParameter("memberId", memberId)
                 .getResultList();
-
     }
 
     @Override
