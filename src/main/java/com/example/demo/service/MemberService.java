@@ -3,12 +3,17 @@ package com.example.demo.service;
 import java.util.List;
 import java.util.Optional;
 
+import com.example.demo.controller.dto.request.MemberLoginRequest;
+import com.example.demo.controller.dto.response.LoginResponse;
 import com.example.demo.domain.Article;
 import com.example.demo.exception.CommonExceptionType;
 import com.example.demo.exception.CustomException;
 import com.example.demo.exception.MemberExceptionType;
 import com.example.demo.repository.ArticleRepositorySpringDataJpa;
 import com.example.demo.repository.MemberRepositorySpringDataJpa;
+import com.example.demo.security.JwtTokenProvider;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,10 +28,17 @@ public class MemberService {
 
     private final MemberRepositorySpringDataJpa memberRepository;
     private final ArticleRepositorySpringDataJpa articleRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final JwtTokenProvider jwtTokenProvider;
 
-    public MemberService(MemberRepositorySpringDataJpa memberRepository, ArticleRepositorySpringDataJpa articleRepository) {
+    public MemberService(MemberRepositorySpringDataJpa memberRepository,
+                         ArticleRepositorySpringDataJpa articleRepository,
+                         PasswordEncoder passwordEncoder,
+                         JwtTokenProvider jwtTokenProvider) {
         this.memberRepository = memberRepository;
         this.articleRepository = articleRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.jwtTokenProvider = jwtTokenProvider;
     }
 
     public MemberResponse getById(Long id) {
@@ -47,8 +59,10 @@ public class MemberService {
     public MemberResponse create(MemberCreateRequest request) {
         if (!isValid(request))   throw new CustomException(CommonExceptionType.BAD_REQUEST_NULL_VALUE);
 
+        String encodedPassword = passwordEncoder.encode(request.password());
+
         Member member = memberRepository.save(
-            new Member(request.name(), request.email(), request.password())
+            new Member(request.name(), request.email(), encodedPassword)
         );
         return MemberResponse.from(member);
     }
@@ -57,6 +71,19 @@ public class MemberService {
         return request.name() != null
                 && request.email() != null
                 && request.password() != null;
+    }
+
+    public LoginResponse login(MemberLoginRequest request) {
+        Member member = memberRepository.findByEmail(request.email())
+                .orElseThrow(() -> new BadCredentialsException("잘못된 계정정보입니다."));
+
+        if (!passwordEncoder.matches(request.password(), member.getPassword())) {
+            throw new BadCredentialsException("잘못된 계정정보입니다.");
+        }
+
+        String message = member.getName() + "님 환영합니다";
+
+        return new LoginResponse(message, jwtTokenProvider.generateToken(member.getEmail()));
     }
 
     @Transactional

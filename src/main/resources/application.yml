@@ -12,3 +12,6 @@ spring:
     properties:
       hibernate:
         format_sql: true
+
+jwt:
+  secret: cf42d45e2e99cded4137f7307acec9b399b0de326f9b47a8115ca634bf7ed35113c33ae538a8a1f4bb7ff681726ad80b53509283a0e6e014e047b63ab662b352
